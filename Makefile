@@ -1,5 +1,5 @@
-CC      = gcc
-LINK    = gcc
+CC      = cc
+LINK    = cc
 
 CFLAGS  = -W -Wall -O2
 LFLAGS  = -lncurses -ltinfo -lrt

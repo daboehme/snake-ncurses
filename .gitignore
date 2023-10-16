@@ -36,6 +36,8 @@
 *.x86_64
 *.hex
 
+snake
+
 # Debug files
 *.dSYM/
 *.su
