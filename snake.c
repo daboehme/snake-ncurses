@@ -31,7 +31,7 @@ const char* helptext =
     " -d [num]  Set difficulty (speed), 0 to 10. Default: 5";
 
 enum direction { Up, Down, Left, Right };
-enum gamestate { GameRunning, GameOver, GameWon };
+enum gamestate { GameRunning, GameOver };
 
 typedef struct opts_t {
     int difficulty;
@@ -116,6 +116,12 @@ int is_tick(Game* game)
 }
 
 
+int game_score(Game* game)
+{
+    return (game->snake_len - game->initial_snake_len - 1);
+}
+
+
 void draw_gameover(Game* game)
 {
     nodelay(stdscr, FALSE);
@@ -123,11 +129,9 @@ void draw_gameover(Game* game)
     int max_x = 0, max_y = 0;
     getmaxyx(stdscr, max_y, max_x);
 
-    int score = (game->snake_len - game->initial_snake_len - 1);
-
     char buf[20];
     memset(buf, 0, 20);
-    int len2 = snprintf(buf, 20, " Score: %d ", score);
+    int len2 = snprintf(buf, 20, " Score: %d ", game_score(game));
 
     mvprintw(max_y/2-1, max_x/2-5, " GAME OVER ");
     mvprintw(max_y/2, max_x/2-len2/2, buf);
@@ -229,7 +233,7 @@ enum gamestate step(Game* game)
 }
 
 
-void run(Game* game)
+int run(Game* game)
 {
     const struct timespec sleeptime = { 0, 5000000 }; /* 5 msec */
 
@@ -253,9 +257,7 @@ void run(Game* game)
         }
 
         if (is_tick(game)) {
-            int state = step(game);
-
-            if (state == GameOver || state == GameWon) {
+            if (step(game) == GameOver) {
                 draw_gameover(game);
                 break;
             }
@@ -265,6 +267,8 @@ void run(Game* game)
 
         nanosleep(&sleeptime, NULL);
     }
+
+    return game_score(game);
 }
 
 
@@ -323,10 +327,12 @@ int main(int argc, char* argv[])
     init_screen();
 
     Game* game = init_game(&opts);
-    run(game);
+    int score = run(game);
     free_game(game);
 
     endwin();
+
+    printf("Score: %d\n", score);
 
     return 0;
 }
